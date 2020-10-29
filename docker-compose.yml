@@ -1,0 +1,31 @@
+# docker-compose exec db psql -U postgres -f /scripts/checker.sql
+version: '3'
+
+services:
+  # CONFIGURANDO O SERVIDOR HTML
+  nginx:
+    image: nginx:1.13
+    container_name: nginx
+    volumes:
+      # SITE
+      - ./frontend:/usr/share/nginx/html/
+      # CONFIGURACAO DO PROXY REVERSO
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx:/nginx
+    # PARA FORA DO CONTAINER NGINX RODA DA PORTA 80
+    # PARA DENTRO DO CONTAINER NGINX RODA NA PORTA 80
+    # POR ISSO 80:80
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - frontend
+
+  # SITE
+  frontend:
+    image: node:10
+    container_name: frontend
+    volumes:
+      - ./frontend:/main
+    working_dir: /main
+    command: bash -c "chmod 777 run.sh && ./run.sh"
